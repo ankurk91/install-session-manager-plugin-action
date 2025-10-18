@@ -1,0 +1,33 @@
+name: tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 16 * *'
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    strategy:
+      fail-fast: false
+      matrix:
+        cache: [ true, false ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Execute this action
+        uses: ./
+        with:
+          cache: ${{ matrix.cache }}
