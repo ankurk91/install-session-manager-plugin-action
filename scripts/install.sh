@@ -42,7 +42,7 @@ detect_os() {
         ;;
     esac
   else
-    echo "Error: Cannot detect OS" >&2
+    echo "Error: Could not detect OS" >&2
     exit 1
   fi
 }
