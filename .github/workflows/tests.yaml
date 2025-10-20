@@ -28,7 +28,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Remove plugin if installed
-        run: sudo rm -rf /usr/local/bin/session-manager-plugin
+        run: |
+          sudo apt remove --purge -y session-manager-plugin
+          sudo rm -f /usr/local/bin/session-manager-plugin          
 
       - name: "Execute this action, cache=${{ matrix.cache }}"
         uses: ./
