@@ -14,7 +14,7 @@ on:
       - dev
 
 jobs:
-  test:
+  if-does-not-exist:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -27,7 +27,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Execute this action
+      - name: Remove plugin if installed
+        run: sudo rm -rf /usr/local/bin/session-manager-plugin
+
+      - name: "Execute this action, cache=${{ matrix.cache }}"
         uses: ./
         with:
           cache: ${{ matrix.cache }}
+
+  if-already-exists:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Execute this action
+        uses: ./
