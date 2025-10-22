@@ -1,7 +1,7 @@
 name: Install AWS Session Manager plugin
 description: Install AWS Session Manager plugin for the AWS CLI on linux runners
 branding:
-  icon: download-cloud
+  icon: package
   color: blue
 inputs:
   cache:
@@ -21,7 +21,9 @@ runs:
       uses: actions/cache@v4
       id: aws-ssm-cache
       with:
-        path: ${{ runner.temp }}/aws-ssm-cache/*.*
+        path: |
+          ${{ runner.temp }}/aws-ssm-cache/*.deb
+          ${{ runner.temp }}/aws-ssm-cache/*.rpm
         key: ${{ runner.os }}-${{ runner.arch }}-aws-ssm-cache-v1
 
     - name: Install Session manager plugin
