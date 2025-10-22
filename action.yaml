@@ -21,17 +21,14 @@ runs:
       uses: actions/cache@v4
       id: aws-ssm-cache
       with:
-        path: |
-          ${{ runner.temp }}/aws-ssm-cache/*.deb
-          ${{ runner.temp }}/aws-ssm-cache/*.rpm
+        path: $HOME/.cache/aws-ssm/*
         key: ${{ runner.os }}-${{ runner.arch }}-aws-ssm-cache-v1
-        restore-keys: ${{ runner.os }}-${{ runner.arch }}-aws-ssm-cache-v1
 
     - name: Install Session manager plugin
       if: ${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_PREINSTALLED == 'false' }}
       env:
         CACHE_HIT: ${{ steps.aws-ssm-cache.outputs.cache-hit == 'true' }}
         CACHE_ENABLED: ${{ inputs.cache == 'true'}}
-        CACHE_PATH: ${{ runner.temp }}/aws-ssm-cache
+        CACHE_PATH: $HOME/.cache/aws-ssm
       shell: bash
       run: "$GITHUB_ACTION_PATH/scripts/install.sh"
