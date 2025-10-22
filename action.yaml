@@ -25,6 +25,7 @@ runs:
           ${{ runner.temp }}/aws-ssm-cache/*.deb
           ${{ runner.temp }}/aws-ssm-cache/*.rpm
         key: ${{ runner.os }}-${{ runner.arch }}-aws-ssm-cache-v1
+        restore-keys: ${{ runner.os }}-${{ runner.arch }}-aws-ssm-cache-v1
 
     - name: Install Session manager plugin
       if: ${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_PREINSTALLED == 'false' }}
