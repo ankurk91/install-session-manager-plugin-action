@@ -18,7 +18,7 @@ runs:
 
     - name: Cache or Restore the installer
       if: ${{ inputs.cache == 'true' && steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_PREINSTALLED == 'false' }}
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: aws-ssm-cache
       with:
         path: $HOME/.cache/aws-ssm/*
