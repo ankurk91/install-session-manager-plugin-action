@@ -25,24 +25,84 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Remove plugin if installed
         run: |
           sudo apt remove --purge -y session-manager-plugin
-          sudo rm -f /usr/local/bin/session-manager-plugin          
+          sudo rm -f /usr/local/bin/session-manager-plugin
+
+      - name: Assert the plugin is really gone
+        run: |
+          if command -v session-manager-plugin >/dev/null 2>&1; then
+            echo "::error::Precondition failed, the plugin is still on PATH at $(command -v session-manager-plugin)"
+            exit 1
+          fi
 
       - name: "Execute this action, cache=${{ matrix.cache }}"
         uses: ./
         with:
           cache: ${{ matrix.cache }}
 
+      - name: Assert the plugin got installed
+        run: |
+          command -v session-manager-plugin
+
+          version=$(session-manager-plugin --version)
+          echo "Installed version: $version"
+          # Loose on purpose, the exact format is AWS's to change. This only
+          # asserts the binary runs and reports something version-shaped.
+          if ! [[ "$version" =~ [0-9]+\.[0-9]+ ]]; then
+            echo "::error::Unexpected --version output: $version"
+            exit 1
+          fi
+
+      - name: Assert the installer landed in the cache directory
+        if: ${{ matrix.cache == true }}
+        run: |
+          installer="$HOME/.cache/aws-ssm/session-manager-plugin.deb"
+          if [ ! -f "$installer" ]; then
+            echo "::error::Expected the installer at $installer, found:"
+            ls -laR "$HOME/.cache/aws-ssm" || echo "  (directory does not exist)"
+            exit 1
+          fi
+
+      - name: Assert no literal '$HOME' directory was created
+        run: |
+          # Regression guard, actions/cache and `env:` do not expand `$HOME`,
+          # so a literal path leaves a directory named '$HOME' behind.
+          if [ -e '$HOME' ]; then
+            echo "::error::A directory literally named '\$HOME' was created in $PWD"
+            exit 1
+          fi
+
   if-already-exists:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+
+      - name: Install the plugin beforehand
+        run: |
+          # Install it here rather than relying on the runner image shipping it,
+          # so this job keeps testing the skip path if the image ever changes.
+          curl -sfL --retry 3 -o /tmp/session-manager-plugin.deb \
+            https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb
+          sudo apt-get install -qq -y --no-install-recommends /tmp/session-manager-plugin.deb
+          command -v session-manager-plugin
 
       - name: Execute this action
         uses: ./
+
+      - name: Assert the install was skipped
+        run: |
+          # Both the cache step and the install step are skipped when the plugin
+          # is already present, so the cache directory must never be created.
+          if [ -e "$HOME/.cache/aws-ssm" ]; then
+            echo "::error::The action did not skip, $HOME/.cache/aws-ssm exists:"
+            ls -laR "$HOME/.cache/aws-ssm"
+            exit 1
+          fi
+
+          session-manager-plugin --version
