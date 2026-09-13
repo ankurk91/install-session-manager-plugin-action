@@ -3,11 +3,13 @@ description: Install AWS Session Manager plugin for the AWS CLI on linux runners
 branding:
   icon: package
   color: blue
+
 inputs:
   cache:
     description: Cache the downloaded installer
     required: false
     default: true
+
 runs:
   using: composite
   steps:
@@ -21,14 +23,17 @@ runs:
       uses: actions/cache@v6
       id: aws-ssm-cache
       with:
-        path: $HOME/.cache/aws-ssm/*
-        key: ${{ runner.os }}-${{ runner.arch }}-aws-ssm-cache-v1
+        # `~` is expanded by actions/cache, `$HOME` is not.
+        # Keep in sync with CACHE_PATH in scripts/install.sh
+        path: ~/.cache/aws-ssm
+        key: aws-ssm-${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_OS }}-${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_ARCH }}-v1
 
     - name: Install Session manager plugin
       if: ${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_PREINSTALLED == 'false' }}
       env:
         CACHE_HIT: ${{ steps.aws-ssm-cache.outputs.cache-hit == 'true' }}
-        CACHE_ENABLED: ${{ inputs.cache == 'true'}}
-        CACHE_PATH: $HOME/.cache/aws-ssm
+        CACHE_ENABLED: ${{ inputs.cache == 'true' }}
+        OS: ${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_OS }}
+        ARCH: ${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_ARCH }}
       shell: bash
       run: "$GITHUB_ACTION_PATH/scripts/install.sh"
