@@ -9,8 +9,7 @@ GitHub Action to install the Session Manager plugin for the AWS CLI.
 
 * Caches and restores the downloaded installer, keyed on the resolved version
 * Installs the latest release, or a version that you pin
-* Installs with `apt-get`, `dnf` or `yum`, whichever the runner provides
-* Tested on GitHub Actions and Gitea Actions
+* Tested on GitHub Actions and [Gitea Actions](https://docs.gitea.com/usage/actions/)
 * Tested on Ubuntu and Amazon Linux 2023 runners (`x86_64` and `arm64`)
 
 ### Usage
