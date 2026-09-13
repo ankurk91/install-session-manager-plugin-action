@@ -60,8 +60,9 @@ jobs:
       - name: Assert the installer landed in the cache directory
         if: ${{ matrix.cache == true }}
         run: |
-          installer="$HOME/.cache/aws-ssm/session-manager-plugin.deb"
-          if [ ! -f "$installer" ]; then
+          # Version-scoped, so find it rather than hardcoding the resolved version.
+          installer=$(find "$HOME/.cache/aws-ssm" -name 'session-manager-plugin.deb' 2>/dev/null | head -1)
+          if [ -z "$installer" ]; then
             echo "::error::Expected the installer at $installer, found:"
             ls -laR "$HOME/.cache/aws-ssm" || echo "  (directory does not exist)"
             exit 1
@@ -73,6 +74,71 @@ jobs:
           # so a literal path leaves a directory named '$HOME' behind.
           if [ -e '$HOME' ]; then
             echo "::error::A directory literally named '\$HOME' was created in $PWD"
+            exit 1
+          fi
+
+  pinned-version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      PINNED: 1.2.707.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Remove plugin if installed
+        run: |
+          sudo apt remove --purge -y session-manager-plugin
+          sudo rm -f /usr/local/bin/session-manager-plugin
+
+      - name: "Execute this action, version=${{ env.PINNED }}"
+        uses: ./
+        with:
+          version: ${{ env.PINNED }}
+
+      - name: Assert the pinned version is what got installed
+        run: |
+          version=$(session-manager-plugin --version)
+          echo "Installed version: $version"
+          if [ "$version" != "$PINNED" ]; then
+            echo "::error::Asked for $PINNED but got $version"
+            exit 1
+          fi
+
+      - name: Assert the installer was cached under the pinned version
+        run: |
+          installer="$HOME/.cache/aws-ssm/$PINNED/session-manager-plugin.deb"
+          if [ ! -f "$installer" ]; then
+            echo "::error::Expected the installer at $installer, found:"
+            ls -laR "$HOME/.cache/aws-ssm" || echo "  (directory does not exist)"
+            exit 1
+          fi
+
+  rejects-bad-version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Remove plugin if installed
+        run: |
+          sudo apt remove --purge -y session-manager-plugin
+          sudo rm -f /usr/local/bin/session-manager-plugin
+
+      - name: Execute this action with an invalid version
+        id: bad
+        continue-on-error: true
+        uses: ./
+        with:
+          version: not-a-version
+
+      - name: Assert it failed instead of downloading something odd
+        run: |
+          if [ "${{ steps.bad.outcome }}" != "failure" ]; then
+            echo "::error::Expected the action to reject an invalid version"
             exit 1
           fi
 

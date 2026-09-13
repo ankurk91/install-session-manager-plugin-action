@@ -7,7 +7,8 @@ GitHub action to install Session Manager plugin for the AWS CLI
 
 ### Features
 
-* Cache and restore the downloaded binary
+* Cache and restore the downloaded binary, keyed on the resolved version
+* Install `latest` or pin an exact version
 * Tested on GitHub and Gitea Actions
 * Tested on Ubuntu and Amazon Linux 3 runners (`X86_64` and `arm64`)
 
@@ -27,6 +28,7 @@ jobs:
         uses: ankurk91/install-session-manager-plugin-action@v1
         with:
           cache: true # or set to false, true by default
+          version: latest # or pin one, e.g. 1.2.835.0
 
       - name: Start session
         run: aws ssm start-session --target instance-id
@@ -34,9 +36,15 @@ jobs:
 
 ### Input options
 
-| Name    | Required | Default | Description                               |
-|---------|----------|---------|-------------------------------------------|
-| `cache` | No       | `true`  | Whether to cache the downloaded installer |
+| Name      | Required | Default  | Description                                           |
+|-----------|----------|----------|-------------------------------------------------------|
+| `cache`   | No       | `true`   | Whether to cache the downloaded installer             |
+| `version` | No       | `latest` | Plugin version to install, e.g. `1.2.835.0`, or `latest` |
+
+With the default `latest`, the action resolves the current version on every run
+and includes it in the cache key, so a new upstream release is picked up rather
+than being masked by an old cache entry. Pin `version` to keep a deploy
+pipeline on a known plugin build.
 
 ### Must read
 
