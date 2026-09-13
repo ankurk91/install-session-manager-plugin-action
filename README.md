@@ -1,16 +1,16 @@
-# Install Session Manager plugin for the AWS CLI
+# Install the Session Manager plugin for the AWS CLI
 
 [![tests](https://github.com/ankurk91/install-session-manager-plugin-action/actions/workflows/tests.yaml/badge.svg)](https://github.com/ankurk91/install-session-manager-plugin-action/actions)
 [![lint](https://github.com/ankurk91/install-session-manager-plugin-action/actions/workflows/lint.yaml/badge.svg)](https://github.com/ankurk91/install-session-manager-plugin-action/actions)
 
-GitHub Action to install Session Manager plugin for the AWS CLI
+GitHub Action to install the Session Manager plugin for the AWS CLI.
 
 ### Features
 
-* Cache and restore the downloaded binary, keyed on the resolved version
-* Install `latest` or pin an exact version
-* Tested on GitHub and Gitea Actions
-* Tested on Ubuntu and Amazon Linux 3 runners (`X86_64` and `arm64`)
+* Caches and restores the downloaded installer, keyed on the resolved version
+* Installs the latest release, or a version that you pin
+* Tested on GitHub Actions and Gitea Actions
+* Tested on Ubuntu and Amazon Linux 2023 runners (`x86_64` and `arm64`)
 
 ### Usage
 
@@ -24,11 +24,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Session manager plugin
+      - name: Install the Session Manager plugin
         uses: ankurk91/install-session-manager-plugin-action@v1
         with:
-          cache: true # or set to false, true by default
-          version: latest # or pin one, e.g. 1.2.835.0
+          cache: true # optional, defaults to true
+          version: latest # optional, defaults to latest
 
       - name: Start session
         run: aws ssm start-session --target instance-id
@@ -36,28 +36,28 @@ jobs:
 
 ### Input options
 
-| Name      | Required | Default  | Description                                              |
-|-----------|----------|----------|----------------------------------------------------------|
-| `cache`   | No       | `true`   | Whether to cache the downloaded installer                |
-| `version` | No       | `latest` | Plugin version to install, e.g. `1.2.835.0`, or `latest` |
+| Name      | Required | Default  | Description                                                  |
+|-----------|----------|----------|--------------------------------------------------------------|
+| `cache`   | No       | `true`   | Whether to cache the downloaded installer                    |
+| `version` | No       | `latest` | The version to install, for example `1.2.835.0`, or `latest` |
 
-With the default `latest`, the action resolves the current version on every run
-and includes it in the cache key, so a new upstream release is picked up rather
-than being masked by an old cache entry. Pin `version` to keep a deploy
-pipeline on a known plugin build.
+With the default of `latest`, the action resolves the current version on every
+run and includes it in the cache key, so that a new upstream release is picked
+up rather than being masked by an older cache entry. Pin `version` instead to
+keep a deployment pipeline on a known plugin build.
 
-### Must read
+### Requirements
 
 > [!IMPORTANT]
-> This action assumes that your runner has AWS CLI preinstalled.
+> This action assumes that the AWS CLI is already installed on your runner.
 
 > [!NOTE]
-> This action uses bash scripts and requires `curl` to be preinstalled.
+> This action runs Bash scripts and requires `curl` to be installed on the runner.
 
-### Ref links
+### References
 
 * https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html
 
 ### License
 
-This repo is licensed under MIT [License](LICENSE.txt).
+This repository is licensed under the MIT [License](LICENSE.txt).

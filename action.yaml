@@ -1,44 +1,46 @@
 name: Install AWS Session Manager plugin
-description: Install AWS Session Manager plugin for the AWS CLI on linux runners
+description: Install the AWS Session Manager plugin for the AWS CLI on Linux runners
 branding:
   icon: package
   color: blue
 
 inputs:
   cache:
-    description: Cache the downloaded installer
+    description: Whether to cache the downloaded installer
     required: false
-    default: true
+    default: ${{ true }}
   version:
-    description: Plugin version to install, for example 1.2.835.0, or "latest"
+    description: The plugin version to install, for example 1.2.835.0, or "latest" for the newest release
     required: false
     default: latest
 
 runs:
   using: composite
   steps:
-    - name: Check if pre-installed
+    - name: Check whether the plugin is already installed
       id: ssm-binary-check
       env:
         INPUT_VERSION: ${{ inputs.version }}
       shell: bash
       run: "$GITHUB_ACTION_PATH/scripts/verify.sh"
 
-    - name: Cache or Restore the installer
+    - name: Restore or save the cached installer
       if: ${{ inputs.cache == 'true' && steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_PREINSTALLED == 'false' }}
       uses: actions/cache@v6
       id: aws-ssm-cache
       with:
-        # `~` is expanded by actions/cache, `$HOME` is not.
-        # Keep in sync with CACHE_ROOT in scripts/install.sh
+        # actions/cache expands `~`, but it does not expand `$HOME`.
+        # Keep this path in sync with CACHE_ROOT in scripts/install.sh.
         path: ~/.cache/aws-ssm
-        # The resolved version is part of the key, so `latest` picks up new
-        # releases instead of pinning the repo to whatever it meant on the day
-        # the cache was first populated. No restore-keys on purpose: a prefix
-        # match would restore an older installer and reintroduce that staleness.
+        # The resolved version is part of the key, so that "latest" picks up new
+        # releases instead of pinning the repository to whatever it meant on the
+        # day the cache was first populated.
+        #
+        # There are no restore-keys on purpose. A prefix match would restore an
+        # older installer, which would bring that staleness straight back.
         key: aws-ssm-v1-${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_OS }}-${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_ARCH }}-${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_VERSION }}
 
-    - name: Install Session manager plugin
+    - name: Install the Session Manager plugin
       if: ${{ steps.ssm-binary-check.outputs.AWS_SESSION_MANAGER_PREINSTALLED == 'false' }}
       env:
         CACHE_HIT: ${{ steps.aws-ssm-cache.outputs.cache-hit == 'true' }}
