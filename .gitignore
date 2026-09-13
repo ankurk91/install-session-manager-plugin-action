@@ -1,7 +1,25 @@
+# Editors
 .idea/
 .vscode/
-*.log
-.env
 *.swp
-*.pem
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local runs of the action (nektos/act)
 .act/
+*.log
+
+# Plugin installers, if the scripts are ever run from the repo root
+*.deb
+*.rpm
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
