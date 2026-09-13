@@ -3,7 +3,7 @@
 [![tests](https://github.com/ankurk91/install-session-manager-plugin-action/actions/workflows/tests.yaml/badge.svg)](https://github.com/ankurk91/install-session-manager-plugin-action/actions)
 [![lint](https://github.com/ankurk91/install-session-manager-plugin-action/actions/workflows/lint.yaml/badge.svg)](https://github.com/ankurk91/install-session-manager-plugin-action/actions)
 
-GitHub action to install Session Manager plugin for the AWS CLI
+GitHub Action to install Session Manager plugin for the AWS CLI
 
 ### Features
 
@@ -36,9 +36,9 @@ jobs:
 
 ### Input options
 
-| Name      | Required | Default  | Description                                           |
-|-----------|----------|----------|-------------------------------------------------------|
-| `cache`   | No       | `true`   | Whether to cache the downloaded installer             |
+| Name      | Required | Default  | Description                                              |
+|-----------|----------|----------|----------------------------------------------------------|
+| `cache`   | No       | `true`   | Whether to cache the downloaded installer                |
 | `version` | No       | `latest` | Plugin version to install, e.g. `1.2.835.0`, or `latest` |
 
 With the default `latest`, the action resolves the current version on every run
