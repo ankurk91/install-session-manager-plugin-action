@@ -51,14 +51,40 @@ download_plugin() {
   fi
 }
 
-install_plugin() {
-  echo "Installing plugin..."
+# Amazon Linux 2, RHEL 7 and CentOS 7 ship yum without dnf, so pick whichever
+# is present rather than assuming the newer one.
+detect_package_manager() {
   if [ "$OS" = "ubuntu" ]; then
+    echo "apt-get"
+    return
+  fi
+
+  local pm
+  for pm in dnf yum; do
+    if command -v "$pm" >/dev/null 2>&1; then
+      echo "$pm"
+      return
+    fi
+  done
+
+  echo "Error: Neither dnf nor yum was found on this runner" >&2
+  exit 1
+}
+
+install_plugin() {
+  echo "Installing plugin with $PACKAGE_MANAGER..."
+  if [ "$PACKAGE_MANAGER" = "apt-get" ]; then
     sudo apt-get install -qq -y --no-install-recommends "./${INSTALLER}"
   else
-    sudo dnf install -y -q "./${INSTALLER}"
+    # dnf and yum agree on these flags, and both treat an argument containing a
+    # slash as a local file rather than a repository package name.
+    sudo "$PACKAGE_MANAGER" install -y -q "./${INSTALLER}"
   fi
 }
+
+# Resolved before downloading so that an unusable runner fails fast.
+PACKAGE_MANAGER=$(detect_package_manager)
+echo "::debug::PACKAGE_MANAGER=$PACKAGE_MANAGER"
 
 if [ "$CACHE_ENABLED" != "true" ]; then
   # Caching is off, so never reuse a leftover file from a previous run on a
